@@ -50,6 +50,7 @@
       @save-product="saveNewProduct"
       @close-modal="closeModals"
     >
+    
     </new-product-modal>
   </div>
 </template>

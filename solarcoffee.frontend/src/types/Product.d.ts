@@ -1,7 +1,7 @@
 export interface IProduct {
   id: number;
-  createdOn: Date;
-  updatedOn: Date;
+  createdOn: Date?;
+  updatedOn: Date?;
   name: string;
   description: string;
   price: number;

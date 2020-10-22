@@ -16,12 +16,12 @@
     </template>
 
     <template v-slot:footer>
-      <solar-button @button-click="save" aria-label="Save new shipment"
-        >Save Received Shipment</solar-button
-      >
-      <solar-button @button-click="close" aria-label="Close modal"
-        >Close</solar-button
-      >
+      <button type="button" @click="save" aria-label="Save new shipment">
+        Save Received Shipment
+      </button>
+      <button type="button" @click="close" aria-label="Close modal">
+        Close
+      </button>
     </template>
   </solar-modal>
 </template>
@@ -34,12 +34,16 @@ import { IProduct, IProductInventory } from "@/types/Product";
 import { IShipment } from "@/types/Shipment";
 export default defineComponent({
   name: "ShipmentModal",
+  components: {
+    SolarModal,
+  },
   props: {
     inventory: Array as () => IProductInventory[],
   },
   data() {
     return {
-      selectedProduct: {} as IProduct,
+      selectedProduct: {
+      } as IProduct,
       qtyReceived: 0,
     };
   },

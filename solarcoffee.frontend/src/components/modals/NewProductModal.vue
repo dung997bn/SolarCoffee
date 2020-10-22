@@ -31,15 +31,22 @@
     </template>
 
     <template v-slot:footer>
-      <solar-button
+      <button
         type="button"
-        @button:click="save"
+        @click="save"
         aria-label="save new item"
-        >Save Product</solar-button
+        class="solar-button full-width"
       >
-      <solar-button type="button" @button:click="close" aria-label="Close modal"
-        >Close</solar-button
+        Save Product
+      </button>
+      <button
+        type="button"
+        @click="close"
+        aria-label="Close modal"
+        class="solar-button full-width"
       >
+        Close
+      </button>
     </template>
   </solar-modal>
 </template>
@@ -53,7 +60,7 @@ export default defineComponent({
   name: "NewProductModal",
   components: {
     SolarModal,
-    SolarButton,
+    // SolarButton,
   },
   data() {
     return {
@@ -62,7 +69,7 @@ export default defineComponent({
   },
   methods: {
     close() {
-     this.$emit("close-modal");
+      this.$emit("close-modal");
     },
     save() {
       this.$emit("save-product", this.newProduct);
