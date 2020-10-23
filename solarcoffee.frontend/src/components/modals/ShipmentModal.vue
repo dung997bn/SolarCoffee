@@ -6,7 +6,11 @@
 
       <select v-model="selectedProduct" class="shipmentItems" id="product">
         <option disabled value="">Please select one</option>
-        <option v-for="item in inventory" :value="item" :key="item.product.id">
+        <option
+          v-for="item in inventory"
+          :value="item.product"
+          :key="item.product.id"
+        >
           {{ item.product.name }}
         </option>
       </select>
@@ -16,10 +20,20 @@
     </template>
 
     <template v-slot:footer>
-      <button type="button" @click="save" aria-label="Save new shipment">
+      <button
+        type="button"
+        @click="save"
+        aria-label="Save new shipment"
+        class="solar-button full-width"
+      >
         Save Received Shipment
       </button>
-      <button type="button" @click="close" aria-label="Close modal">
+      <button
+        type="button"
+        @click="close"
+        aria-label="Close modal"
+        class="solar-button full-width"
+      >
         Close
       </button>
     </template>
@@ -42,8 +56,7 @@ export default defineComponent({
   },
   data() {
     return {
-      selectedProduct: {
-      } as IProduct,
+      selectedProduct: {} as IProduct,
       qtyReceived: 0,
     };
   },
@@ -52,6 +65,7 @@ export default defineComponent({
       this.$emit("close-modal");
     },
     save() {
+      debugger;
       const shipment: IShipment = {
         productId: this.selectedProduct.id,
         adjustment: this.qtyReceived,

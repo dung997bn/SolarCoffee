@@ -358,8 +358,8 @@ namespace SolarCoffee.Data.Migrations
                     b.Property<int?>("ProductId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("QuantityOnHand")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<int>("QuantityOnHand")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("SnapshotTime")
                         .HasColumnType("timestamp without time zone");

@@ -102,7 +102,7 @@ namespace SolarCoffee.Services.Implementations
                     Time = now
                 };
             }
-            catch
+            catch (Exception e)
             {
                 return new ServiceResponse<ProductInventory>
                 {

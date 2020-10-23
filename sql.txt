@@ -1,0 +1,19 @@
+INSERT INTO public."ProductInventories"( "CreatedOn", "UpdatedOn", "QuantityOnHand", "IdealQuantity", "ProductId")
+	VALUES (now(),now(),20,24,1),
+	(now(),now(),21,26,2),
+	(now(),now(),9,12,3),
+	(now(),now(),12,23,4),
+	(now(),now(),17,5,5)
+
+
+
+
+
+
+INSERT INTO public."Products"( "CreatedOn", "UpdatedOn", "Name", "Description", "Price", "IsTaxable", "IsArchived")
+	VALUES (now(), now(),'10 LB Dark Roast','10 LB bag of dark roast coffee beans', 100, true, false),
+	(now(), now(),'20 LB Dark Roast','20 LB bag of dark roast coffee beans', 200, true, false),
+		(now(), now(),'30 LB Dark Roast','30 LB bag of dark roast coffee beans',300, true, false),
+			(now(), now(),'40 LB Dark Roast','40 LB bag of dark roast coffee beans', 400, true, false),
+				(now(), now(),'50 LB Dark Roast','50 LB bag of dark roast coffee beans', 500, true, false),
+					(now(), now(),'60 LB Dark Roast','60 LB bag of dark roast coffee beans', 600, true, false)

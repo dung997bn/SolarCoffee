@@ -23,8 +23,14 @@
       </thead>
       <tbody>
         <tr v-for="item in inventory" :key="item.id">
-          <td>{{ item.name }}</td>
-          <td>{{ item.quantityOnHand }}</td>
+          <td>{{ item.product.name }}</td>
+          <td
+            v-bind:class="
+              `${applyColor(item.quantityOnHand, item.idealQuantity)}`
+            "
+          >
+            {{ item.quantityOnHand }}
+          </td>
           <td>{{ item.product.price }}</td>
           <td>
             <span v-if="item.product.isTaxable"> Yes </span>
@@ -32,7 +38,10 @@
             <span v-else> No </span>
           </td>
           <td>
-            <div>x</div>
+            <div
+              class="lni-cross-circle product-archive"
+              @click="archiveProduct(item.product.id)"
+            ></div>
           </td>
         </tr>
       </tbody>
@@ -50,7 +59,6 @@
       @save-product="saveNewProduct"
       @close-modal="closeModals"
     >
-    
     </new-product-modal>
   </div>
 </template>
@@ -58,10 +66,15 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { IProduct, IProductInventory } from "@/types/Product";
+import { InventoryService } from "@/services/inventory-service";
+import { ProductService } from "@/services/product-service";
 import SolarButton from "@/components/SolarButton.vue";
 import ShipmentModal from "@/components/modals/ShipmentModal.vue";
 import NewProductModal from "@/components/modals/NewProductModal.vue";
 import { IShipment } from "@/types/Shipment";
+
+const inventoryService = new InventoryService();
+const productService = new ProductService();
 
 export default defineComponent({
   name: "Inventory",
@@ -69,6 +82,9 @@ export default defineComponent({
     SolarButton,
     ShipmentModal,
     NewProductModal,
+  },
+  async created() {
+    this.initialize();
   },
   data() {
     return {
@@ -78,6 +94,17 @@ export default defineComponent({
     };
   },
   methods: {
+    async initialize() {
+      this.inventory = await inventoryService.getInventory();     
+    },
+    applyColor(current: number, target: number) {
+      if (current <= 0) {
+        return "red";
+      } else if (Math.abs(target - current) > 8) {
+        return "yellow";
+      }
+      return "green";
+    },
     closeModals() {
       this.isNewProductVisible = false;
       this.isShipmentVisible = false;
@@ -88,14 +115,52 @@ export default defineComponent({
     showShipmentModal() {
       this.isShipmentVisible = true;
     },
-    saveNewShipment(shipment: IShipment) {
-      console.log(shipment);
+    async saveNewShipment(shipment: IShipment) {
+      await inventoryService.updateInventoryQuantity(shipment);
+      this.isShipmentVisible = false;
+      await this.initialize();
     },
-    saveNewProduct(newProduct: IProduct) {
-      console.log(newProduct);
+    async saveNewProduct(newProduct: IProduct) {
+      debugger;
+      await productService.save(newProduct);
+      this.isNewProductVisible=false;
+      await this.initialize();
+    },
+    async archiveProduct(productId: number) {
+      await productService.archive(productId);
+      await this.initialize();
     },
   },
 });
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+@import "@/scss/global.scss";
+
+.green {
+  font-weight: bold;
+  color: $solar-green;
+}
+
+.yellow {
+  font-weight: bold;
+  color: $solar-yellow;
+}
+
+.red {
+  font-weight: bold;
+  color: $solar-red;
+}
+
+.inventory-actions {
+  display: flex;
+  margin-bottom: 0.8rem;
+}
+
+.product-archive {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: $solar-red;
+}
+</style>

@@ -20,7 +20,7 @@
           <input
             type="text"
             id="productDesc"
-            v-model="newProduct.desctiption"
+            v-model="newProduct.description"
           />
         </li>
         <li>
