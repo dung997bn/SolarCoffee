@@ -1,8 +1,6 @@
 <template>
   <solar-modal>
-    <template v-slot:header>
-      Add New Customer
-    </template>
+    <template v-slot:header> Add New Customer </template>
     <template v-slot:body>
       <ul class="newCustomer">
         <li>
@@ -76,9 +74,14 @@ import SolarModal from "@/components/modals/SolarModal.vue";
 import { ICustomer } from "@/types/Customer";
 export default defineComponent({
   name: "NewCustomerModal",
+  components: {
+    SolarModal,
+  },
   data() {
     return {
-      customer: {} as ICustomer,
+      customer: {
+        primaryAddress: {},
+      } as ICustomer,
     };
   },
   methods: {

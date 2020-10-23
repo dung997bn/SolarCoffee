@@ -32,6 +32,12 @@
         </tr>
       </tbody>
     </table>
+
+    <new-customer-modal
+      v-if="isCustomerModalVisible"
+      @save-customer="saveNewCustomer"
+      @close-modal="closeModal"
+    />
   </div>
 </template>
 
@@ -40,11 +46,15 @@ import { defineComponent } from "vue";
 import { ICustomer } from "@/types/Customer";
 import { CustomerService } from "@/services/customer-service";
 import moment from "moment";
+import NewCustomerModal from "@/components/modals/NewCustomerModal.vue";
 
 const customerService = new CustomerService();
 
 export default defineComponent({
   name: "Customer",
+  components: {
+    NewCustomerModal,
+  },
   data() {
     return {
       isCustomerModalVisible: false as boolean,
@@ -64,6 +74,14 @@ export default defineComponent({
     },
     async initialize() {
       this.customers = await customerService.getCustomers();
+    },
+    async saveNewCustomer(newCustomer: ICustomer) {
+      await customerService.addCustomers(newCustomer);
+      this.isCustomerModalVisible = false;
+      await this.initialize();
+    },
+    closeModal() {
+      this.isCustomerModalVisible = false;
     },
   },
   async created() {
