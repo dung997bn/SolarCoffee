@@ -1,12 +1,13 @@
-import { createStore } from 'vuex'
+import { Action, createStore } from "vuex";
+import pathify from "vuex-pathify";
+import global from "@/store/global-store";
+
+pathify.options.mapping = "simple";
+pathify.options.deep = 2;
 
 export default createStore({
-  state: {
-  },
-  mutations: {
-  },
-  actions: {
-  },
-  modules: {
-  }
-})
+  ...global,
+  modules: {},
+  plugins: [pathify.plugin],
+});
+
