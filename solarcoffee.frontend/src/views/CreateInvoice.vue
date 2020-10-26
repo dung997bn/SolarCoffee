@@ -39,12 +39,17 @@
 
       <div class="invoice-item-actions">
         <button
-          :disabled="!newItem.product || newItem.quantity"
+          class="solar-button"
+          :disabled="!newItem.product || !newItem.quantity"
           @click="addLineItem"
         >
           Add Line Item
         </button>
-        <button :disabled="!lineItems.length" @click="finalizeOrder">
+        <button
+          :disabled="!lineItems.length"
+          @click="finalizeOrder"
+          class="solar-button"
+        >
           Finalize Order
         </button>
       </div>
@@ -80,12 +85,88 @@
         </table>
       </div>
     </div>
-    <div class="invoice-step" v-if="invoiceStep === 3"></div>
+    <div class="invoice-step" v-if="invoiceStep === 3">
+      <h2>Review and Submit</h2>
+      <button @click="submitInvoice" class="solar-button">
+        Submit Invoice
+      </button>
+      <hr />
+      <div class="invoice-step-detail" id="invoice" ref="invoice">
+        <div class="invoice-logo">
+          <img
+            src="../assets/images/solar_coffee_logo.png"
+            alt="Solar Coffee Logo"
+            id="imgLogo"
+          />
+          <h4>1337 Solar Lane</h4>
+          <h4>San somewhere, CA 90000</h4>
+          <h4>USA</h4>
+
+          <div class="invoice-order-list" v-if="lineItems.length">
+            <div class="invoice-header">
+              <h4>Invoice : {{ new Date() }}</h4>
+              <h4>
+                Customer:
+                {{
+                  selectedCustomer.firstName + " " + selectedCustomer.lastName
+                }}
+              </h4>
+              <h4>
+                Address:
+                {{ selectedCustomer.primaryAddress.addressLine1 || "" }} ,
+                {{ selectedCustomer.primaryAddress.city }},
+                {{ selectedCustomer.primaryAddress.state }},
+                {{ selectedCustomer.primaryAddress.postalCode }},
+                {{ selectedCustomer.primaryAddress.country }}
+              </h4>
+            </div>
+
+            <table class="table">
+              <thead>
+                <tr>
+                  <td>Product</td>
+                  <td>Description</td>
+                  <td>Quantity</td>
+                  <td>Price</td>
+                  <td>Subtotal</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="lineItem in lineItems"
+                  :key="`index_${lineItem.product.id}`"
+                >
+                  <td>{{ lineItem.product.name }}</td>
+                  <td>{{ lineItem.product.description }}</td>
+                  <td>{{ lineItem.quantity }}</td>
+                  <td>{{ lineItem.product.price }}</td>
+                  <td>{{ lineItem.product.price * lineItem.quantity }}</td>
+                </tr>
+                <tr>
+                  <td colspan="4"></td>
+                  <td>Grand total</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="due">Balance due upon receipt:</td>
+                  <td class="price-final">{{ runningTotal }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
     <hr />
     <div class="invoice-steps-actions">
-      <button @click="prev" :disabled="!canGoPrev">Previous</button>
-      <button @click="next" :disabled="!canGoNext">Next</button>
-      <button @click="startOver">Start over</button>
+      <button class="solar-button" @click="prev" :disabled="!canGoPrev">
+        Previous
+      </button>
+      <button class="solar-button" @click="next" :disabled="!canGoNext">
+        Next
+      </button>
+      <button class="solar-button" @click="startOver">Start over</button>
     </div>
   </div>
 </template>
@@ -99,6 +180,8 @@ import { ISalesOrder } from "@/types/SalesOrder";
 import { CustomerService } from "@/services/customer-service";
 import { InventoryService } from "@/services/inventory-service";
 import { InvoiceService } from "@/services/invoice-service";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 const customerService = new CustomerService();
 const inventoryService = new InventoryService();
@@ -141,16 +224,39 @@ export default defineComponent({
       };
 
       const existingItems = this.lineItems.map((item) => item.product?.id);
-
       if (existingItems.includes(newItem.product?.id)) {
         const lineItem = this.lineItems.find(
           (item) => item.product?.id === newItem.product?.id
-        );
-        lineItem.quantity = Number(this.lineItems.quantity) += newItem.quantity;
+        ) as ILineItem;
+        let currentQuantity = Number(lineItem.quantity);
+        const updatedQuantity = (currentQuantity += newItem.quantity);
+        lineItem.quantity = updatedQuantity;
       } else {
         this.lineItems.push(this.newItem);
       }
       this.newItem = { product: undefined, quantity: 0 };
+    },
+    async submitInvoice(): Promise<void> {
+      this.invoice = {
+        customerId: this.selectedCustomerId,
+        lineItems: this.lineItems,
+      };
+      await invoiceService.makeNewInvoice(this.invoice);
+      this.dowloadPdf();
+      await this.$router.push("/orders");
+    },
+    dowloadPdf() {
+      debugger;
+      const pdf = new jsPDF("p", "pt", "a4", true);
+      const invoice = document.getElementById("invoice")!;
+      const width = (this.$refs["invoice"] as any).clientWidth;
+      const height = (this.$refs["invoice"] as any).clientHeight;
+
+      html2canvas(invoice).then((canvas) => {
+        const image = canvas.toDataURL("image/png");
+        pdf.addImage(image, "PNG", 0, 0, width * 0.55, height * 0.55);
+        pdf.save("invoice");
+      });
     },
     finalizeOrder() {
       this.invoiceStep = 3;
@@ -166,11 +272,13 @@ export default defineComponent({
   computed: {
     runningTotal(): number {
       return this.lineItems.reduce(
-        (a, b) => a + b["product"]!["price"] * b["quantity"],
+        (a: number, b: ILineItem) => a + b.product!.price * b.quantity,
         0
       );
     },
-    canGoPrev() {},
+    canGoPrev(): boolean {
+      return this.invoiceStep !== 1;
+    },
     canGoNext(): boolean {
       if (this.invoiceStep == 1) {
         return this.selectedCustomerId !== 0;
@@ -182,6 +290,9 @@ export default defineComponent({
         return false;
       }
       return false;
+    },
+    selectedCustomer(): ICustomer {
+      return this.customers.find((c) => c.id === this.selectedCustomerId)!;
     },
   },
 });
