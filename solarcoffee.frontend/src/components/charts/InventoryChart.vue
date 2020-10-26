@@ -13,14 +13,14 @@
 import { ApexOptions } from "apexcharts";
 import { defineComponent } from "vue";
 import VueApexCharts from "vue-apexcharts";
-import { IInventoryTimeline } from "@/types/InventoryGraph";
+import { IInventoryTimeline, ISnapshot } from "@/types/InventoryGraph";
 import { get, sync, call } from "vuex-pathify";
 import store from "@/store";
 
 export default defineComponent({
   name: "InventoryChart",
   components: {
-    VueApexCharts,
+    apexchart: VueApexCharts,
   },
   data() {
     return {
@@ -28,8 +28,8 @@ export default defineComponent({
       isTimelineBuilt: false,
     };
   },
-  methods: {
-    getOptions() {
+  computed: {
+    options() {
       return {
         dataLabels: { enabled: false },
         fill: {
@@ -39,14 +39,24 @@ export default defineComponent({
           curve: "smooth",
         },
         xaxis: {
-          categories: this.snapshotTimeline.timeline,
+          categories: store.state.snapshotTimeline.timeline,
           type: "datetime",
         },
       } as ApexOptions;
     },
+    series() {
+      return store.state.snapshotTimeline.productInventorySnapshots.map(
+        (snapshot) => ({
+          name: snapshot.productId,
+          data: snapshot.quantityOnHand,
+        })
+      );
+    },
   },
-  async created() {
-    await store.dispatch("assignSnapshot");
+  methods: {
+    async created() {
+      await store.dispatch("assignSnapshot");
+    },
   },
 });
 </script>

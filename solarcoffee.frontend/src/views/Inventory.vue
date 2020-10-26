@@ -2,6 +2,7 @@
   <div class="inventory-container">
     <h1 id="inventoryTitle">Inventory</h1>
     <hr />
+    <inventory-chart></inventory-chart>
 
     <div class="inventory-actions">
       <solar-button id="addNewBtn" @click="showNewProductModal"
@@ -25,9 +26,10 @@
         <tr v-for="item in inventory" :key="item.id">
           <td>{{ item.product.name }}</td>
           <td
-            v-bind:class="
-              `${applyColor(item.quantityOnHand, item.idealQuantity)}`
-            "
+            v-bind:class="`${applyColor(
+              item.quantityOnHand,
+              item.idealQuantity
+            )}`"
           >
             {{ item.quantityOnHand }}
           </td>
@@ -71,6 +73,7 @@ import { ProductService } from "@/services/product-service";
 import SolarButton from "@/components/SolarButton.vue";
 import ShipmentModal from "@/components/modals/ShipmentModal.vue";
 import NewProductModal from "@/components/modals/NewProductModal.vue";
+import InventoryChart from "@/components/charts/InventoryChart.vue";
 import { IShipment } from "@/types/Shipment";
 
 const inventoryService = new InventoryService();
@@ -82,6 +85,7 @@ export default defineComponent({
     SolarButton,
     ShipmentModal,
     NewProductModal,
+    InventoryChart,
   },
   async created() {
     this.initialize();
@@ -95,7 +99,7 @@ export default defineComponent({
   },
   methods: {
     async initialize() {
-      this.inventory = await inventoryService.getInventory();     
+      this.inventory = await inventoryService.getInventory();
     },
     applyColor(current: number, target: number) {
       if (current <= 0) {
@@ -123,7 +127,7 @@ export default defineComponent({
     async saveNewProduct(newProduct: IProduct) {
       debugger;
       await productService.save(newProduct);
-      this.isNewProductVisible=false;
+      this.isNewProductVisible = false;
       await this.initialize();
     },
     async archiveProduct(productId: number) {
