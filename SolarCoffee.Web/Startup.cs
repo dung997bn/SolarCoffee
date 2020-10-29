@@ -15,6 +15,7 @@ using Newtonsoft.Json.Serialization;
 using SolarCoffee.Data;
 using SolarCoffee.Services.Implementations;
 using SolarCoffee.Services.Interfaces;
+using VueCliMiddleware;
 
 namespace SolarCoffee.Web
 {
@@ -51,6 +52,11 @@ namespace SolarCoffee.Web
             services.AddTransient<ICustomerService, CustomerService>();
             services.AddTransient<IInventoryService, InventoryService>();
             services.AddTransient<IOrderService, OrderService>();
+
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "solarcoffee.frontend";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,6 +69,9 @@ namespace SolarCoffee.Web
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
+            app.UseSpaStaticFiles();
+
             app.UseRouting();
 
             app.UseAuthorization();
@@ -72,6 +81,20 @@ namespace SolarCoffee.Web
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            app.UseSpa(spa =>
+            {
+                if (env.IsDevelopment())
+                    spa.Options.SourcePath = "solarcoffee.frontend";
+                else
+                    spa.Options.SourcePath = "dist";
+
+                if (env.IsDevelopment())
+                {
+                    spa.UseVueCli(npmScript: "serve");
+                }
+
             });
         }
     }
